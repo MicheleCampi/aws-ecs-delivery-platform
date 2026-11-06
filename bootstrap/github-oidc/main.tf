@@ -21,6 +21,7 @@ provider "aws" {
 
 locals {
   repo         = "MicheleCampi/aws-ecs-delivery-platform"
+  repo_sub     = "MicheleCampi@215741962/aws-ecs-delivery-platform@1448594934" # immutable owner/repo IDs, matches GitHub OIDC sub
   state_bucket = "michele-tfstate-aws-ecs-delivery"
 }
 
@@ -45,7 +46,7 @@ data "aws_iam_policy_document" "plan_trust" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${local.repo}:pull_request"]
+      values   = ["repo:${local.repo_sub}:pull_request"]
     }
   }
 }
