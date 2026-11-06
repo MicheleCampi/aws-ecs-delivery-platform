@@ -4,3 +4,4 @@
 *.tfplan
 .ci-bin/
 crash.log
+app/target/
