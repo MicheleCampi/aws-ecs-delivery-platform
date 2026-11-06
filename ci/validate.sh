@@ -12,4 +12,6 @@ gitleaks git --no-banner --redact .
 actionlint .github/workflows/*.yml
 terraform -chdir=bootstrap/state init -backend=false -input=false >/dev/null
 terraform -chdir=bootstrap/state validate -no-color
+terraform -chdir=bootstrap/github-oidc init -backend=false -input=false >/dev/null
+terraform -chdir=bootstrap/github-oidc validate -no-color
 echo "ALL PASS"
