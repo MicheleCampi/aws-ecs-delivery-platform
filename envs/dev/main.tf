@@ -48,3 +48,12 @@ module "network" {
 output "vpc_id" { value = module.network.vpc_id }
 output "private_subnet_ids" { value = module.network.private_subnet_ids }
 output "nat_gateway_count" { value = module.network.nat_gateway_count }
+
+module "security" {
+  source = "../../modules/security"
+  name   = var.environment
+  vpc_id = module.network.vpc_id
+}
+
+output "alb_sg_id" { value = module.security.alb_sg_id }
+output "task_sg_id" { value = module.security.task_sg_id }
