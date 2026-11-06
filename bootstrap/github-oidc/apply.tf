@@ -50,7 +50,7 @@ data "aws_iam_policy_document" "apply_trust" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = [for e in local.envs : "repo:${local.repo}:environment:${e}"]
+      values   = [for e in local.envs : "repo:${local.repo_sub}:environment:${e}"]
     }
   }
 }
