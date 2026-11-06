@@ -1,0 +1,61 @@
+name: plan
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: plan-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: eu-west-1
+  AWS_ROLE_ARN: arn:aws:iam::821465445442:role/gha-plan
+
+jobs:
+  plan:
+    name: plan ${{ matrix.root }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        root: [bootstrap/state, bootstrap/github-oidc]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned tools (inference-platform-ci, pinned in ci/platform-ci.env)
+        run: bash ci/install-tools.sh
+      - name: Get GitHub OIDC token (no third-party action)
+        run: |
+          curl -sSf -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" \
+            | jq -r .value > "${RUNNER_TEMP}/oidc-token"
+          {
+            echo "AWS_WEB_IDENTITY_TOKEN_FILE=${RUNNER_TEMP}/oidc-token"
+            echo "AWS_ROLE_SESSION_NAME=gha-plan-${GITHUB_RUN_ID}"
+          } >> "${GITHUB_ENV}"
+      - name: Who am I
+        run: aws sts get-caller-identity --query Arn --output text
+      - name: Terraform plan
+        env:
+          ROOT: ${{ matrix.root }}
+        run: |
+          export PATH="${PWD}/.ci-bin:${PATH}"
+          terraform -chdir="${ROOT}" init -input=false -no-color >/dev/null
+          set +e
+          terraform -chdir="${ROOT}" plan -input=false -no-color -lock-timeout=60s -detailed-exitcode > plan.txt 2>&1
+          rc=$?
+          set -e
+          {
+            echo "### plan ${ROOT} (exit ${rc})"
+            echo '```'
+            tail -n 60 plan.txt
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
+          tail -n 5 plan.txt
+          if [ "${rc}" -eq 1 ]; then exit 1; fi
