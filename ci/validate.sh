@@ -14,4 +14,6 @@ terraform -chdir=bootstrap/state init -backend=false -input=false >/dev/null
 terraform -chdir=bootstrap/state validate -no-color
 terraform -chdir=bootstrap/github-oidc init -backend=false -input=false >/dev/null
 terraform -chdir=bootstrap/github-oidc validate -no-color
+terraform -chdir=envs/dev init -backend=false -input=false >/dev/null
+terraform -chdir=envs/dev validate -no-color
 echo "ALL PASS"
