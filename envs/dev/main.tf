@@ -76,9 +76,23 @@ module "service" {
   private_subnet_ids = module.network.private_subnet_ids
   alb_sg_id          = module.security.alb_sg_id
   task_sg_id         = module.security.task_sg_id
-  image              = "${data.aws_ecr_repository.app.repository_url}:${var.image_tag}"
+  cognito = {
+    user_pool_arn = module.auth.user_pool_arn
+    client_id     = module.auth.client_id
+    domain        = module.auth.domain
+  }
+  image = "${data.aws_ecr_repository.app.repository_url}:${var.image_tag}"
 }
 
 output "alb_dns_name" { value = module.service.alb_dns_name }
 output "cluster_name" { value = module.service.cluster_name }
 output "service_name" { value = module.service.service_name }
+
+module "auth" {
+  source        = "../../modules/auth"
+  name          = "delivery-${var.environment}"
+  callback_urls = ["https://${module.service.alb_dns_name}/oauth2/idpresponse"]
+}
+
+output "user_pool_id" { value = module.auth.user_pool_id }
+output "cognito_domain" { value = module.auth.domain }

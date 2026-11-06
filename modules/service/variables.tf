@@ -45,3 +45,12 @@ variable "certificate_arn" {
   type    = string
   default = null
 }
+
+variable "cognito" {
+  type = object({
+    user_pool_arn = string
+    client_id     = string
+    domain        = string
+  })
+  default = null
+}

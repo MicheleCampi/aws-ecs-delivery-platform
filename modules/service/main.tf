@@ -60,9 +60,37 @@ resource "aws_lb_listener" "https" {
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   certificate_arn   = local.certificate_arn
+  dynamic "default_action" {
+    for_each = var.cognito == null ? [] : [var.cognito]
+    content {
+      type  = "authenticate-cognito"
+      order = 1
+      authenticate_cognito {
+        user_pool_arn       = default_action.value.user_pool_arn
+        user_pool_client_id = default_action.value.client_id
+        user_pool_domain    = default_action.value.domain
+      }
+    }
+  }
   default_action {
     type             = "forward"
+    order            = 2
     target_group_arn = aws_lb_target_group.this.arn
+  }
+}
+
+resource "aws_lb_listener_rule" "healthz_public" {
+  count        = var.cognito == null ? 0 : 1
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 10
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.this.arn
+  }
+  condition {
+    path_pattern {
+      values = ["/healthz"]
+    }
   }
 }
 
