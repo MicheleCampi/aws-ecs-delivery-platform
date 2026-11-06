@@ -57,3 +57,28 @@ module "security" {
 
 output "alb_sg_id" { value = module.security.alb_sg_id }
 output "task_sg_id" { value = module.security.task_sg_id }
+
+variable "image_tag" {
+  type    = string
+  default = "0.1.0"
+}
+
+data "aws_ecr_repository" "app" {
+  name = "delivery-app"
+}
+
+module "service" {
+  source             = "../../modules/service"
+  name               = "delivery-${var.environment}"
+  environment        = var.environment
+  vpc_id             = module.network.vpc_id
+  public_subnet_ids  = module.network.public_subnet_ids
+  private_subnet_ids = module.network.private_subnet_ids
+  alb_sg_id          = module.security.alb_sg_id
+  task_sg_id         = module.security.task_sg_id
+  image              = "${data.aws_ecr_repository.app.repository_url}:${var.image_tag}"
+}
+
+output "alb_dns_name" { value = module.service.alb_dns_name }
+output "cluster_name" { value = module.service.cluster_name }
+output "service_name" { value = module.service.service_name }
