@@ -10,4 +10,6 @@ terraform validate -no-color
 terraform test -no-color
 gitleaks git --no-banner --redact .
 actionlint .github/workflows/*.yml
+terraform -chdir=bootstrap/state init -backend=false -input=false >/dev/null
+terraform -chdir=bootstrap/state validate -no-color
 echo "ALL PASS"
