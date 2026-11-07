@@ -5,3 +5,4 @@
 .ci-bin/
 crash.log
 app/target/
+modules/**/.terraform.lock.hcl

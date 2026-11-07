@@ -41,13 +41,13 @@ run "per_az_one_nat_per_az" {
 }
 
 run "rejects_unknown_nat_mode" {
-  command         = plan
+  command = plan
   variables { nat_mode = "double" }
   expect_failures = [var.nat_mode]
 }
 
 run "rejects_single_az" {
-  command         = plan
+  command = plan
   variables { az_count = 1 }
   expect_failures = [var.az_count]
 }
