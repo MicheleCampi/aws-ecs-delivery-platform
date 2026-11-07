@@ -1,0 +1,8 @@
+A-016 K2 EKS 2026-11-07T22:44:51Z image=<ACCOUNT_ID>.dkr.ecr.eu-west-1.amazonaws.com/delivery-app@sha256:e585ab770af276d9ba320a36c3020f5ba8f1a0d9a751b3eca4180361d11acd1f
+node ip-10-40-10-164.eu-west-1.compute.internal Ready v1.37.1-eks-6e7947a containerd://2.3.7+unknown
+pod imageID=<ACCOUNT_ID>.dkr.ecr.eu-west-1.amazonaws.com/delivery-app@sha256:e585ab770af276d9ba320a36c3020f5ba8f1a0d9a751b3eca4180361d11acd1f
+status 200 60
+time_total avg 0.102 s max 3.103 s
+START 2026-11-07T22:33:31Z
+APPLIED 2026-11-07T22:42:48Z
+LB_UP 2026-11-07T22:44:51Z
