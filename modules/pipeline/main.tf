@@ -103,7 +103,7 @@ resource "aws_codebuild_project" "this" {
         pre_build:
           commands:
             - aws ecr get-login-password | docker login --username AWS --password-stdin $REGISTRY
-            - TAG="s3-$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | tr -c 'A-Za-z0-9_.-\n' '-')"
+            - TAG="s3-$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | tr -cd 'A-Za-z0-9_.')"
         build:
           commands:
             - docker build --build-arg APP_VERSION=$TAG -t $REPO_URL:$TAG .
