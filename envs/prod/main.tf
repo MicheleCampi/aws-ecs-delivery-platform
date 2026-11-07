@@ -102,3 +102,21 @@ variable "desired_count" {
   type        = number
   default     = 1
 }
+
+module "monitoring" {
+  source         = "../../modules/monitoring"
+  name           = "delivery-${var.environment}"
+  cluster_name   = module.service.cluster_name
+  service_name   = module.service.service_name
+  alb_arn_suffix = module.service.alb_arn_suffix
+  tg_arn_suffix  = module.service.tg_arn_suffix
+  alarm_email    = var.alarm_email
+}
+
+variable "alarm_email" {
+  description = "Optional email for alarm notifications"
+  type        = string
+  default     = ""
+}
+
+output "dashboard_name" { value = module.monitoring.dashboard_name }
