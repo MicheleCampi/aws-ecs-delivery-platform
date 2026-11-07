@@ -42,7 +42,7 @@ flowchart LR
 | `modules/pipeline` | CodeBuild and CodePipeline for the dev image |
 | `modules/monitoring` | SNS topic, three alarms, dashboard (prod) |
 | `scripts/cutover.sh` | Version cut-over and rollback by image tag |
-| `docs/runbooks/` | Cut-over and rollback runbook |
+| `docs/runbooks/` | [Go-live](docs/runbooks/go-live.md) and [cut-over and rollback](docs/runbooks/cutover.md) runbooks |
 
 ## Environments
 
