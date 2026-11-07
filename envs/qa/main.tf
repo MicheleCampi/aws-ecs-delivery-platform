@@ -80,7 +80,8 @@ module "service" {
     client_id     = module.auth.client_id
     domain        = module.auth.domain
   }
-  image = "${data.aws_ecr_repository.app.repository_url}:${var.image_tag}"
+  image         = "${data.aws_ecr_repository.app.repository_url}:${var.image_tag}"
+  desired_count = var.desired_count
 }
 
 output "alb_dns_name" { value = module.service.alb_dns_name }
@@ -95,3 +96,9 @@ module "auth" {
 
 output "user_pool_id" { value = module.auth.user_pool_id }
 output "cognito_domain" { value = module.auth.domain }
+
+variable "desired_count" {
+  description = "Running tasks; 2 spreads them across AZs"
+  type        = number
+  default     = 1
+}
