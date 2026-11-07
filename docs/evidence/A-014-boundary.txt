@@ -1,0 +1,10 @@
+boundary arn:aws:iam::ACCOUNT:policy/app-boundary version v2
+ecs:UpdateService                arn:aws:ecs:eu-west-1:ACCOUNT:service/delivery-dev/delivery-dev            -                        allowed       OK
+iam:PassRole                     arn:aws:iam::ACCOUNT:role/app/delivery-dev-execution                       ecs-tasks.amazonaws.com  allowed       OK
+iam:PassRole                     arn:aws:iam::ACCOUNT:role/app/delivery-dev-execution                       ec2.amazonaws.com        explicitDeny  OK
+iam:PassRole                     arn:aws:iam::ACCOUNT:role/gha-apply                                        ecs-tasks.amazonaws.com  explicitDeny  OK
+iam:CreateUser                   arn:aws:iam::ACCOUNT:user/backdoor                                         -                        explicitDeny  OK
+iam:AttachRolePolicy             arn:aws:iam::ACCOUNT:role/app/delivery-dev-execution                       -                        explicitDeny  OK
+s3:GetObject                     arn:aws:s3:::michele-tfstate-aws-ecs-delivery/env/prod/terraform.tfstate   -                        explicitDeny  OK
+organizations:LeaveOrganization  *                                                                          -                        explicitDeny  OK
+sts:AssumeRoleWithWebIdentity    arn:aws:iam::ACCOUNT:role/gha-apply                                        -                        explicitDeny  OK

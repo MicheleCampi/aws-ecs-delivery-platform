@@ -69,6 +69,7 @@ flowchart LR
 | A-011, prod resilience | 2 tasks in 2 AZ, one task stopped under probe | 60/60 healthz 200 during the replacement |
 | A-012, prod cut-over ([PR #19](../../pull/19)) | Version cut-over and rollback under a 2 s healthz probe | Cut-over 158 s, 83/83 200; rollback 174 s, 91/91 200; digests verified |
 | A-013, prod alarms ([PR #20](../../pull/20)) | Health check broken on purpose, then restored | ALARM after ~4 min, OK ~4 min after restore, SNS action executed both ways |
+| A-014, IAM boundary ([output](docs/evidence/A-014-boundary.txt)) | Deployed `app-boundary` evaluated with the IAM policy simulator against an allow-all identity policy (`scripts/simulate-boundary.sh`) | 9/9 as expected: ECS deploy and PassRole of `app/*-execution` to ecs-tasks allowed; PassRole to another service or role, CreateUser, AttachRolePolicy, prod state read, LeaveOrganization and AssumeRoleWithWebIdentity explicitly denied |
 
 Every test ended with a destroy and a check of zero NAT, ALB, EIP, VPC and ECS
 (and alarms and SNS for A-013).
