@@ -7,7 +7,8 @@ terraform version | sed -n 1p
 terraform fmt -check -recursive
 terraform init -backend=false -input=false >/dev/null
 terraform validate -no-color
-terraform test -no-color
+terraform -chdir=modules/network init -backend=false -input=false -no-color >/dev/null
+terraform -chdir=modules/network test -no-color
 gitleaks git --no-banner --redact .
 actionlint .github/workflows/*.yml
 terraform -chdir=bootstrap/state init -backend=false -input=false >/dev/null
