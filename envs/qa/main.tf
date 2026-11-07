@@ -80,8 +80,9 @@ module "service" {
     client_id     = module.auth.client_id
     domain        = module.auth.domain
   }
-  image         = "${data.aws_ecr_repository.app.repository_url}:${var.image_tag}"
-  desired_count = var.desired_count
+  image            = "${data.aws_ecr_repository.app.repository_url}:${var.image_tag}"
+  cpu_architecture = var.cpu_architecture
+  desired_count    = var.desired_count
 }
 
 output "alb_dns_name" { value = module.service.alb_dns_name }
@@ -101,4 +102,10 @@ variable "desired_count" {
   description = "Running tasks; 2 spreads them across AZs"
   type        = number
   default     = 1
+}
+
+variable "cpu_architecture" {
+  type        = string
+  default     = "X86_64"
+  description = "Fargate CPU architecture for qa (A-015 benchmark)"
 }

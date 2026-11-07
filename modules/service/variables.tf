@@ -59,3 +59,13 @@ variable "permissions_boundary_name" {
   type    = string
   default = "app-boundary"
 }
+
+variable "cpu_architecture" {
+  type        = string
+  default     = "X86_64"
+  description = "Fargate CPU architecture: X86_64 or ARM64 (the image must match)"
+  validation {
+    condition     = contains(["X86_64", "ARM64"], var.cpu_architecture)
+    error_message = "cpu_architecture must be X86_64 or ARM64."
+  }
+}
