@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 
 locals {
   account      = data.aws_caller_identity.current.account_id
-  envs         = ["dev", "qa", "prod"]
+  envs         = ["dev", "qa", "prod", "eks"]
   boundary_arn = "arn:aws:iam::${local.account}:policy/app-boundary"
   app_roles    = "arn:aws:iam::${local.account}:role/app/*"
   app_policies = "arn:aws:iam::${local.account}:policy/app/*"
