@@ -1,0 +1,69 @@
+name: apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: Target environment (only dev has a root today)
+        type: choice
+        options: [dev]
+      action:
+        description: apply or destroy
+        type: choice
+        options: [apply, destroy]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: apply-${{ inputs.env }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: eu-west-1
+  AWS_ROLE_ARN: arn:aws:iam::821465445442:role/gha-apply
+
+jobs:
+  apply:
+    name: ${{ inputs.action }} envs/${{ inputs.env }}
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    environment: ${{ inputs.env }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned tools (inference-platform-ci, pinned in ci/platform-ci.env)
+        run: bash ci/install-tools.sh
+      - name: Get GitHub OIDC token (no third-party action)
+        run: |
+          curl -sSf -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" \
+            | jq -r .value > "${RUNNER_TEMP}/oidc-token"
+          {
+            echo "AWS_WEB_IDENTITY_TOKEN_FILE=${RUNNER_TEMP}/oidc-token"
+            echo "AWS_ROLE_SESSION_NAME=gha-apply-${GITHUB_RUN_ID}"
+          } >> "${GITHUB_ENV}"
+      - name: Who am I
+        run: aws sts get-caller-identity --query Arn --output text
+      - name: Terraform plan and apply
+        env:
+          ROOT: envs/${{ inputs.env }}
+          ACTION: ${{ inputs.action }}
+        run: |
+          export PATH="${PWD}/.ci-bin:${PATH}"
+          terraform -chdir="${ROOT}" init -input=false -no-color >/dev/null
+          args=()
+          if [ "${ACTION}" = destroy ]; then args+=(-destroy); fi
+          if ! terraform -chdir="${ROOT}" plan -input=false -no-color -lock-timeout=60s "${args[@]}" -out=tfplan > plan.txt 2>&1; then
+            tail -n 40 plan.txt; exit 1
+          fi
+          summary="$(grep -E '^(Plan:|No changes)' plan.txt || true)"
+          echo "${summary}"
+          echo "### ${ACTION} ${ROOT}: ${summary}" >> "${GITHUB_STEP_SUMMARY}"
+          if [ "${ACTION}" = apply ] && ! grep -qE '(No changes|, 0 to destroy\.)' <<< "${summary}"; then
+            echo "guard: apply plan would destroy resources, refusing"; exit 1
+          fi
+          terraform -chdir="${ROOT}" apply -input=false -no-color -lock-timeout=60s tfplan
