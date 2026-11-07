@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       env:
-        description: Target environment (only dev has a root today)
+        description: Target environment (qa runs images promoted from dev)
         type: choice
-        options: [dev]
+        options: [dev, qa]
       action:
         description: apply or destroy
         type: choice
