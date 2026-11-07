@@ -58,4 +58,5 @@ jobs:
             echo '```'
           } >> "${GITHUB_STEP_SUMMARY}"
           tail -n 5 plan.txt
+          grep -E '^(Plan:|No changes)' plan.txt || true
           if [ "${rc}" -eq 1 ]; then exit 1; fi
