@@ -75,19 +75,19 @@ resource "aws_cloudwatch_dashboard" "this" {
   dashboard_body = jsonencode({
     widgets = [
       { type = "metric", x = 0, y = 0, width = 12, height = 6, properties = {
-        title = "ALB requests and target 5xx", region = data.aws_region.current.name, stat = "Sum", period = 60,
+        title = "ALB requests and target 5xx", region = data.aws_region.current.region, stat = "Sum", period = 60,
         metrics = [["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix],
       ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", var.alb_arn_suffix]] } },
       { type = "metric", x = 12, y = 0, width = 12, height = 6, properties = {
-        title = "Healthy and unhealthy targets", region = data.aws_region.current.name, stat = "Maximum", period = 60,
+        title = "Healthy and unhealthy targets", region = data.aws_region.current.region, stat = "Maximum", period = 60,
         metrics = [["AWS/ApplicationELB", "HealthyHostCount", "LoadBalancer", var.alb_arn_suffix, "TargetGroup", var.tg_arn_suffix],
       ["AWS/ApplicationELB", "UnHealthyHostCount", "LoadBalancer", var.alb_arn_suffix, "TargetGroup", var.tg_arn_suffix]] } },
       { type = "metric", x = 0, y = 6, width = 12, height = 6, properties = {
-        title = "ECS CPU and memory", region = data.aws_region.current.name, stat = "Average", period = 60,
+        title = "ECS CPU and memory", region = data.aws_region.current.region, stat = "Average", period = 60,
         metrics = [["AWS/ECS", "CPUUtilization", "ClusterName", var.cluster_name, "ServiceName", var.service_name],
       ["AWS/ECS", "MemoryUtilization", "ClusterName", var.cluster_name, "ServiceName", var.service_name]] } },
       { type = "metric", x = 12, y = 6, width = 12, height = 6, properties = {
-        title = "Target response time p95", region = data.aws_region.current.name, stat = "p95", period = 60,
+        title = "Target response time p95", region = data.aws_region.current.region, stat = "p95", period = 60,
       metrics = [["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", var.alb_arn_suffix]] } }
     ]
   })
