@@ -26,7 +26,7 @@ resource "aws_subnet" "public" {
   vpc_id            = aws_vpc.this.id
   availability_zone = local.azs[count.index]
   cidr_block        = cidrsubnet(var.cidr, 8, count.index)
-  tags              = { Name = "${var.name}-public-${local.azs[count.index]}", tier = "public" }
+  tags              = merge({ Name = "${var.name}-public-${local.azs[count.index]}", tier = "public" }, var.public_subnet_tags)
 }
 
 resource "aws_subnet" "private" {
@@ -34,7 +34,7 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.this.id
   availability_zone = local.azs[count.index]
   cidr_block        = cidrsubnet(var.cidr, 8, count.index + 10)
-  tags              = { Name = "${var.name}-private-${local.azs[count.index]}", tier = "private" }
+  tags              = merge({ Name = "${var.name}-private-${local.azs[count.index]}", tier = "private" }, var.private_subnet_tags)
 }
 
 resource "aws_route_table" "public" {

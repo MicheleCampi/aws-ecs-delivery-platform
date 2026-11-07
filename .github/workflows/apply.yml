@@ -6,7 +6,7 @@ on:
       env:
         description: Target environment (qa runs images promoted from dev)
         type: choice
-        options: [dev, qa, prod]
+        options: [dev, qa, prod, eks]
       action:
         description: apply or destroy
         type: choice

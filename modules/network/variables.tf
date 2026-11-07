@@ -26,3 +26,15 @@ variable "nat_mode" {
     error_message = "nat_mode must be none, single or per_az."
   }
 }
+
+variable "public_subnet_tags" {
+  type        = map(string)
+  default     = {}
+  description = "Extra tags for public subnets (e.g. kubernetes.io/role/elb)"
+}
+
+variable "private_subnet_tags" {
+  type        = map(string)
+  default     = {}
+  description = "Extra tags for private subnets (e.g. kubernetes.io/role/internal-elb)"
+}
