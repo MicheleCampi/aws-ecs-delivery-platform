@@ -20,7 +20,7 @@ flowchart LR
   tg --> t2[Fargate task AZ b]
   t1 & t2 -->|egress| nat[NAT per AZ]
   t1 & t2 -.pull.-> ecr[(ECR, immutable tags)]
-  t1 & t2 -.logs.-> cw[CloudWatch logs and<br/>Container Insights]
+  t1 & t2 -.logs.-> cw[CloudWatch logs]
   cw --> alarms[Alarms: target 5xx,<br/>unhealthy hosts, CPU] --> sns[SNS topic]
   subgraph CI/CD
     gh[GitHub Actions<br/>plan matrix, gated apply via OIDC] --> tf[Terraform state<br/>S3 + lock]
@@ -56,7 +56,7 @@ flowchart LR
 
 ## Delivery flow
 
-1. Pull request: `validate` (fmt, validate, terraform test, secret scan, workflow lint) and a `plan` job per root with the plan summary.
+1. Pull request: `validate` (fmt, validate, terraform test on the network module with a mocked provider, secret scan, workflow lint) and a `plan` job per root with the plan summary.
 2. Merge to main: nothing is applied automatically.
 3. `apply.yml` (manual dispatch, `env` and `action`): GitHub OIDC to a gated apply role, environment approval, then apply or destroy.
 4. Releases: `scripts/cutover.sh <env> <tag>` registers a task definition with the new immutable tag and rolls the service (100/200, circuit breaker with rollback). Rollback is the same script with the previous tag. See [docs/runbooks/cutover.md](docs/runbooks/cutover.md).
@@ -72,6 +72,14 @@ flowchart LR
 
 Every test ended with a destroy and a check of zero NAT, ALB, EIP, VPC and ECS
 (and alarms and SNS for A-013).
+
+## Security and trade-offs
+
+- CI reaches AWS through GitHub OIDC only: a read-only `gha-plan` role for pull requests and a `gha-apply` role for protected environments, both trusted on the immutable owner and repo IDs.
+- Every role CI creates must carry the `app-boundary` permissions boundary. It denies every IAM action except passing `app/*-execution` roles to ECS tasks (D-0114), and it denies account, Organizations, budget and state-bucket access.
+- `gha-apply` uses `PowerUserAccess` plus scoped IAM and explicit deny guardrails. This is a deliberate choice for a single demo account; per-service policies are the next step.
+- Container Insights is off to keep cost near zero; logs and ALB alarms (A-013) cover this demo.
+- The app runs from a `scratch` image as user 10001 with a read-only root filesystem.
 
 ## Cost
 
