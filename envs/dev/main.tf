@@ -96,3 +96,16 @@ module "auth" {
 
 output "user_pool_id" { value = module.auth.user_pool_id }
 output "cognito_domain" { value = module.auth.domain }
+
+module "pipeline" {
+  source             = "../../modules/pipeline"
+  name               = "delivery-${var.environment}"
+  cluster_name       = module.service.cluster_name
+  service_name       = module.service.service_name
+  repository_url     = data.aws_ecr_repository.app.repository_url
+  repository_arn     = data.aws_ecr_repository.app.arn
+  execution_role_arn = module.service.execution_role_arn
+}
+
+output "pipeline_name" { value = module.pipeline.pipeline_name }
+output "artifact_bucket" { value = module.pipeline.artifact_bucket }
