@@ -124,8 +124,10 @@ data "aws_iam_policy_document" "ecs_tasks_assume" {
 }
 
 resource "aws_iam_role" "execution" {
-  name               = "${var.name}-execution"
-  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
+  name                 = "${var.name}-execution"
+  path                 = "/app/"
+  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.boundary.account_id}:policy/${var.permissions_boundary_name}"
+  assume_role_policy   = data.aws_iam_policy_document.ecs_tasks_assume.json
 }
 
 resource "aws_iam_role_policy_attachment" "execution" {
@@ -204,3 +206,5 @@ resource "aws_ecs_service" "this" {
   }
   depends_on = [aws_lb_listener.https, aws_iam_role_policy_attachment.execution]
 }
+
+data "aws_caller_identity" "boundary" {}

@@ -54,3 +54,8 @@ variable "cognito" {
   })
   default = null
 }
+
+variable "permissions_boundary_name" {
+  type    = string
+  default = "app-boundary"
+}

@@ -18,8 +18,27 @@ data "aws_iam_policy_document" "boundary" {
   statement {
     sid       = "DenyControlPlane"
     effect    = "Deny"
-    actions   = ["iam:*", "organizations:*", "account:*", "budgets:*", "sts:AssumeRoleWithWebIdentity"]
+    actions   = ["organizations:*", "account:*", "budgets:*", "sts:AssumeRoleWithWebIdentity"]
     resources = ["*"]
+  }
+  # D-0114: the only IAM action a workload role may perform is passing an
+  # app execution role to ECS tasks (CodePipeline ECS deploy action).
+  statement {
+    sid       = "DenyIamExceptPassRoleToEcsTasks"
+    effect    = "Deny"
+    actions   = ["iam:*"]
+    resources = ["*"]
+    condition {
+      test     = "StringNotEquals"
+      variable = "iam:PassedToService"
+      values   = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+  statement {
+    sid           = "DenyPassRoleOutsideAppExecution"
+    effect        = "Deny"
+    actions       = ["iam:PassRole"]
+    not_resources = ["${local.app_roles}-execution"]
   }
   statement {
     sid       = "DenyStateBucket"
