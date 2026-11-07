@@ -205,6 +205,9 @@ resource "aws_ecs_service" "this" {
     rollback = true
   }
   depends_on = [aws_lb_listener.https, aws_iam_role_policy_attachment.execution]
+  lifecycle {
+    ignore_changes = [task_definition]
+  }
 }
 
 data "aws_caller_identity" "boundary" {}
