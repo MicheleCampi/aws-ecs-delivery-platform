@@ -1,13 +1,20 @@
 # aws-ecs-delivery-platform
 
+[![ci](https://github.com/MicheleCampi/aws-ecs-delivery-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/MicheleCampi/aws-ecs-delivery-platform/actions/workflows/ci.yml)
+
 Terraform for a containerised service on AWS: VPC with private subnets and NAT,
 ECS Fargate behind an ALB with Cognito authentication, ECR, least-privilege IAM,
 CodeBuild/CodePipeline, DEV/QA/PROD with image promotion, CloudWatch alarms,
-and a tested zero-downtime cut-over and rollback.
+and a tested zero-downtime cut-over and rollback. The same prod image, by
+digest, also runs on EKS (A-016).
 
 **Status:** designed, built and verified in a personal AWS account, evidence in CI
 and in the tables below. Not operated in production. Every apply is followed by a
 destroy in the same session; total spend is capped at 30 EUR.
+
+**Measured:** cut-over 158 s with 83/83 healthz 200 and rollback 174 s with
+91/91 (A-012); 60/60 healthz 200 while a prod task was replaced (A-011);
+ARM64 tasks at about 41% less CPU than x86 at the same latency (A-015).
 
 ## Architecture
 
@@ -71,7 +78,7 @@ flowchart LR
 | A-013, prod alarms ([PR #20](../../pull/20)) | Health check broken on purpose, then restored | ALARM after ~4 min, OK ~4 min after restore, SNS action executed both ways |
 | A-014, IAM boundary ([output](docs/evidence/A-014-boundary.txt)) | Deployed `app-boundary` evaluated with the IAM policy simulator against an allow-all identity policy (`scripts/simulate-boundary.sh`) | 9/9 as expected: ECS deploy and PassRole of `app/*-execution` to ecs-tasks allowed; PassRole to another service or role, CreateUser, AttachRolePolicy, prod state read, LeaveOrganization and AssumeRoleWithWebIdentity explicitly denied |
 | A-015, Fargate ARM64 vs X86_64 ([x86 run 1](docs/evidence/A-015-x86-run1.json), [x86 run 2](docs/evidence/A-015-x86-run2.json), [arm64](docs/evidence/A-015-arm64.json), CPU: [1](docs/evidence/A-015-x86-run1-cpu.txt) [2](docs/evidence/A-015-x86-run2-cpu.txt) [3](docs/evidence/A-015-arm64-cpu.txt)) | Same commit and Dockerfile built for amd64 and arm64 (`cpu_architecture` variable); 300 rps for 5 min on `/healthz` through the ALB, 0.25 vCPU / 512 MB, CloudWatch task CPU | 0 errors in all runs; p50 24.1 / 24.1 / 24.0 ms, p99 29.1 / 31.8 / 26.4 ms (difference within network noise); task CPU ~23% x86 vs ~13.5% ARM, about 41% less. Capacity per dollar ~2x is derived from list price (~20% lower), not measured; minimal Rust app, other workloads will differ |
-| A-016, EKS K2 ([output](docs/evidence/A-016-eks-healthz.txt), [manifest](k8s/delivery-app.yaml)) | Prod image by digest (`sha256:e585ab77`, same as A-010) on EKS 1.37, 1 t3.small managed node, Service type LoadBalancer; same hardening as ECS (uid 10001, read-only root fs, no capabilities); 60 `/healthz` probes from the internet, then destroy | 60/60 200, avg 0.102 s, one outlier at 3.1 s on a freshly created ELB, kept as measured; apply 9 min, Service deleted before destroy; ~25 min up, ~0.09 USD |
+| A-016, EKS K2 ([output](docs/evidence/A-016-eks-healthz.txt), [manifest](k8s/delivery-app.yaml)) | Prod image by digest (`sha256:e585ab77`, same as A-010) on EKS 1.37, 1 t3.small managed node, Service type LoadBalancer; same hardening as ECS (uid 10001, read-only root fs, no capabilities); 60 `/healthz` probes from the internet, then destroy | 60/60 200, avg 0.102 s, one outlier at 3.1 s on a freshly created ELB, kept as measured; apply 9 min, Service deleted before destroy; EKS charge that day 0.14 USD (Cost Explorer) |
 
 Every test ended with a destroy and a check of zero NAT, ALB, EIP, VPC and ECS
 (and alarms and SNS for A-013).
@@ -86,11 +93,11 @@ Every test ended with a destroy and a check of zero NAT, ALB, EIP, VPC and ECS
 
 ## Cost
 
-| Item | Measured |
-|---|---|
-| prod running (2 NAT, ALB, 2 Fargate tasks) | ~0.16 USD per hour |
-| One full prod test (apply, test, destroy) | ~0.4 to 0.5 h, ~0.07 USD |
-| Project total so far | ~0.6 EUR of the 30 EUR cap |
+Gross spend from AWS Cost Explorer for the whole account, before credits
+(credits covered all of it): **2.04 USD** from June to November 2026, an upper
+bound for this project. November, when A-016 ran, was 1.79 USD: NAT gateways
+and other EC2 items 1.20 USD, load balancing 0.31 USD, the EKS control plane
+0.14 USD.
 
 CloudWatch alarms, dashboard and SNS stay within the free tier.
 
