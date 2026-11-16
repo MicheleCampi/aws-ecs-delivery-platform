@@ -1,0 +1,27 @@
+# Weekly update proposals, one grouped pull request per ecosystem.
+# A proposal only runs the PR checks (validate, plan); nothing is applied
+# until apply.yml is dispatched by hand, as for any other change.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+  - package-ecosystem: terraform
+    directories:
+      - /
+      - /bootstrap/state
+      - /bootstrap/github-oidc
+      - /envs/shared
+      - /envs/dev
+      - /envs/qa
+      - /envs/prod
+      - /envs/eks
+    schedule:
+      interval: weekly
+    groups:
+      terraform:
+        patterns: ["*"]
