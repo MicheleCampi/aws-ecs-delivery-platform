@@ -17,7 +17,7 @@ production.
   with an environment approval (PROD adds a 5 minute wait).
 - [Go-live](runbooks/go-live.md) and [cut-over and rollback](runbooks/cutover.md) runbooks.
 
-**Measured results** (details in the [README evidence table](../README.md#evidence)).
+**Measured results** (details in the [README evidence table](../README.md#evidence); raw output is published for A-014 to A-016, not retained for A-010 to A-013).
 
 | What | Result |
 |---|---|

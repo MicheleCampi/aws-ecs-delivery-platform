@@ -83,6 +83,12 @@ flowchart LR
 Every test ended with a destroy and a check of zero NAT, ALB, EIP, VPC and ECS
 (and alarms and SNS for A-013).
 
+A-010 to A-013 were recorded in the session notes at the time they ran; their raw
+probe and console output was not retained, so those four rows have no file in
+`docs/evidence/` and are not reproducible from this repository. A-014 to A-016
+keep their raw output. They are not re-measured: a rerun would be a new test
+with its own record.
+
 ## Security and trade-offs
 
 - CI reaches AWS through GitHub OIDC only: a read-only `gha-plan` role for pull requests and a `gha-apply` role for protected environments, both trusted on the immutable owner and repo IDs.
